@@ -42,7 +42,7 @@
       <div class="panel">
         <div class="panel-header">Hierarchy</div>
         <div class="panel-body">
-          <!-- <HierarchyPanel /> -->
+          <HierarchyPanel />
         </div>
       </div>
     </Pane>

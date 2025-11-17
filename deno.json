@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "lib": ["dom", "dom.iterable", "deno.ns"]
+  },
+  "importMap": "import_map.json",
+  "tasks": {
+    "dev": "deno run --allow-read --allow-net --allow-env --allow-write --watch src/game/main.ts",
+    "editor:dev": "cd editor && npm run dev",
+    "editor:build": "cd editor && npm run build",
+    "editor:preview": "cd editor && npm run preview"
+  }
+}

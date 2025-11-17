@@ -34,21 +34,17 @@ export async function loadPackFromFile(file: File) {
   const pack = PackReader.parse(buf);
   const res = new ResourceManager(pack);
 
-  const scenes = pack.entries
-    .filter((e) => e.name.endsWith(".scene"))
-    .map((e) => e.name);
+  const entries = pack.entries;
 
-  const materials = pack.entries
-    .filter((e) => e.name.endsWith(".material"))
-    .map((e) => e.name);
+  const byExtension = (ext: string) =>
+    entries
+      .filter((e) => e.name.toLowerCase().endsWith(ext))
+      .map((e) => e.name);
 
-  const meshes = pack.entries
-    .filter((e) => e.name.endsWith(".mesh"))
-    .map((e) => e.name);
-
-  const collisions = pack.entries
-    .filter((e) => e.name.endsWith(".collision"))
-    .map((e) => e.name);
+  const scenes = byExtension(".scene");
+  const materials = byExtension(".material");
+  const meshes = byExtension(".mesh");
+  const collisions = byExtension(".collision");
 
   resourceStore.set({
     pack,

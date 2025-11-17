@@ -22,6 +22,16 @@ To get started with the On3D engine, you can follow these steps:
 12. Learn more about the On3D engine by running `on3d learn`.
 
 
+## Todo
+- ✅ engine renderer ( replace dx9 calls with threejs/webgpu calls)
+- ✅ implement the original calls for the engine.
+- ✅ reimplement the dependencies in typescript.
+- Implement a pack reader so that we are able to import older projects back in to the engine
+- Implement a way to read the original game files in the pack file and transform them in to threejs or webgpu calls.
+- replace the original networking library with a better one
+- implement lua scripting.
+
+
 ## Documentation
 
 #Structure

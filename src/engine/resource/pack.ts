@@ -246,7 +246,7 @@ export class PackWriter {
       for (const [dir, idx] of directories.entries()) {
         // UTF-16LE, padded to 128 bytes
         const encoded = new TextEncoder().encode(dir);
-        const utf16 = new TextEncoder("utf-16le").encode(dir);
+        const utf16 = new TextEncoder().encode(dir);
         u8.set(utf16, offset);
         offset += 128;
   
@@ -259,7 +259,7 @@ export class PackWriter {
   
       // File entries table
       for (const f of fileEntries) {
-        const utf16 = new TextEncoder("utf-16le").encode(f.name);
+        const utf16 = new TextEncoder().encode(f.name);
         u8.set(utf16, offset);
         offset += 128;
   

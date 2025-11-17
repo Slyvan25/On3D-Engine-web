@@ -21,14 +21,15 @@
 </script>
 
 <div class="node-item">
-  <div
+  <button
+    type="button"
     class="node-label"
     class:selected={isSelected}
     style={`padding-left:${depth * 12}px;`}
     on:click={() => selectNode(node)}
   >
     {node.name || "(unnamed)"}
-  </div>
+  </button>
 
   {#each children as child (child)}
     <svelte:self node={child} depth={depth + 1} />
@@ -44,6 +45,12 @@
     cursor: pointer;
     padding: 4px 0;
     user-select: none;
+    border: none;
+    background: transparent;
+    color: inherit;
+    width: 100%;
+    text-align: left;
+    font: inherit;
   }
 
   .node-label:hover {

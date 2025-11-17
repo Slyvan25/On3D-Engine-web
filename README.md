@@ -25,23 +25,8 @@ To get started with the On3D engine, you can follow these steps:
 ## Documentation
 
 #Structure
-```
-src/
-  engine/
-    core/
-      math.ts          // Vector3, Quaternion, etc.
-      types.ts         // shared interfaces
-      engine.ts        // WebOn3DEngine
-      scene-manager.ts // WebSceneManager, WebSceneNode, WebCamera, WebViewport
-    render/
-      render-system.ts // WebRenderSystem abstraction
-      three-renderer.ts // ThreeJsWebRenderSystem implementation
-    gameplay/
-      avatar.ts        // WebAvatar, WebAvatarManager
-      qpang-scene.ts   // WebGameSceneManager, map/scene loader
 
 ```
-
 WEB-ON3D ENGINE/
 │  index.html
 │  deno.json
@@ -102,6 +87,7 @@ WEB-ON3D ENGINE/
        └── packs/
            data.pack
 
+```
 
 #API
 

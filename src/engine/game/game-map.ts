@@ -17,12 +17,13 @@ export class GameMap {
   constructor(private resources: ResourceManager) {}
 
   loadMeta(path: string) {
-    if (!this.resources) return;
-
-    const buffer = this.resources["pack"].getFile(path);
-    const json = JSON.parse(new TextDecoder().decode(buffer));
-
-    this.metadata = json as MapMetadata;
+    try {
+      const buffer = this.resources.getFileBuffer(path);
+      const json = JSON.parse(new TextDecoder().decode(buffer));
+      this.metadata = json as MapMetadata;
+    } catch (err) {
+      console.warn(`GameMap: failed to load metadata '${path}':`, err);
+    }
   }
 
   getSpawns() {

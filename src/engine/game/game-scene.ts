@@ -9,7 +9,6 @@
 import { SceneLoadOptions } from "../types/Scene.ts";
 import { WebSceneManager } from "../scene/scene-manager.ts";
 
-import { PackReader } from "../resource/pack-reader.ts";
 import { ResourceManager } from "../resource/resource-manager.ts";
 
 import { MeshBuilder } from "../resource/builders/mesh-builder.ts";
@@ -23,7 +22,6 @@ export interface IGameSceneManager {
 export class WebGameSceneManager implements IGameSceneManager {
   private sceneManager: WebSceneManager;
 
-  private pack: PackReader | null = null;
   private resources: ResourceManager | null = null;
   private sceneBuilder: SceneBuilder | null = null;
 
@@ -32,8 +30,7 @@ export class WebGameSceneManager implements IGameSceneManager {
   }
 
   async loadPack(url: string) {
-    this.pack = await PackReader.load(url);
-    this.resources = new ResourceManager(this.pack);
+    this.resources = await ResourceManager.fromPackUrl(url);
 
     const matBuilder = new MaterialBuilder();
     const meshBuilder = new MeshBuilder(matBuilder, this.resources);

@@ -56,10 +56,6 @@ export class ThreeWebRenderSystem implements IRenderSystem {
     this.camera.position.set(0, 2, 5);
     this.scene.add(this.camera);
 
-    // Basic lighting
-    const light = new THREE.DirectionalLight(0xffffff, 1.0);
-    light.position.set(5, 10, 7);
-    this.scene.add(light);
   }
 
   setSize(width: number, height: number) {

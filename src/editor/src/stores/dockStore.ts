@@ -1,11 +1,11 @@
-import { writable } from "svelte/store";
+import { writable, get } from "svelte/store";
 
 export type PanelId =
   | "hierarchy"
   | "viewport"
   | "assets"
   | "inspector"
-  | "three-editor";
+  | "scene-viewer";
 export type DockZoneId = "left" | "center" | "bottom" | "right";
 
 export interface DockZoneState {
@@ -16,18 +16,87 @@ export interface DockZoneState {
 
 export type DockLayoutState = Record<DockZoneId, DockZoneState>;
 
-const initialLayout: DockLayoutState = {
+const DEFAULT_LAYOUT: DockLayoutState = {
   left: { id: "left", panels: ["hierarchy"], active: "hierarchy" },
   center: { id: "center", panels: ["viewport"], active: "viewport" },
   bottom: {
     id: "bottom",
-    panels: ["assets", "three-editor"],
+    panels: ["assets", "scene-viewer"],
     active: "assets",
   },
   right: { id: "right", panels: ["inspector"], active: "inspector" },
 };
 
+const STORAGE_KEY = "on3d-editor-dock-layout";
+const PANEL_IDS: PanelId[] = [
+  "hierarchy",
+  "viewport",
+  "assets",
+  "inspector",
+  "scene-viewer",
+];
+
+function cloneLayout(layout: DockLayoutState): DockLayoutState {
+  return JSON.parse(JSON.stringify(layout));
+}
+
+function isValidLayout(value: unknown): value is DockLayoutState {
+  if (!value || typeof value !== "object") return false;
+  const zones: DockZoneId[] = ["left", "center", "bottom", "right"];
+  const seen = new Set<PanelId>();
+
+  for (const zoneId of zones) {
+    const zone = (value as Record<string, DockZoneState>)[zoneId];
+    if (!zone || !Array.isArray(zone.panels)) return false;
+    for (const panel of zone.panels) {
+      if (!PANEL_IDS.includes(panel as PanelId)) return false;
+      if (seen.has(panel as PanelId)) return false;
+      seen.add(panel as PanelId);
+    }
+  }
+
+  return PANEL_IDS.every((panel) => seen.has(panel));
+}
+
+function readStoredLayout(): DockLayoutState | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (isValidLayout(parsed)) {
+      return parsed;
+    }
+  } catch (err) {
+    console.warn("dockStore: failed to parse saved layout", err);
+  }
+  return null;
+}
+
+const initialLayout =
+  typeof window === "undefined"
+    ? cloneLayout(DEFAULT_LAYOUT)
+    : readStoredLayout() ?? cloneLayout(DEFAULT_LAYOUT);
+
 export const dockLayout = writable<DockLayoutState>(initialLayout);
+
+export function saveDockLayoutState(layout?: DockLayoutState) {
+  if (typeof window === "undefined") return;
+  const snapshot = JSON.stringify(layout ?? get(dockLayout));
+  window.localStorage.setItem(STORAGE_KEY, snapshot);
+}
+
+export function resetDockLayout() {
+  const reset = cloneLayout(DEFAULT_LAYOUT);
+  dockLayout.set(reset);
+  saveDockLayoutState(reset);
+}
+
+export function loadSavedDockLayout() {
+  const saved = readStoredLayout();
+  if (!saved) return;
+  dockLayout.set(saved);
+}
 
 export function setActivePanel(zoneId: DockZoneId, panelId: PanelId) {
   dockLayout.update((layout) => {
@@ -92,6 +161,7 @@ export function movePanel(
       active: panelId,
     };
 
+    saveDockLayoutState(nextLayout);
     return nextLayout;
   });
 }

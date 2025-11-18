@@ -4,6 +4,7 @@
   import { SceneSerializer } from "../../../../engine/resource/scene-format";
   import MeshPreview from "./MeshPreview.svelte";
   import AssetTreeNode from "./AssetTreeNode.svelte";
+  import { scenePreviewSelection } from "../../stores/scenePreviewStore";
 
   let selectedMesh: string | null = null;
   let selectedFile: string | null = null;
@@ -52,11 +53,13 @@
     selectedFile = file.path;
 
     if (file.extension === ".scene") {
+      scenePreviewSelection.set(file.path);
       loadScene(file.path);
       selectedMesh = null;
       return;
     }
 
+    scenePreviewSelection.set(null);
     if (file.extension === ".mesh") {
       selectedMesh = file.path;
       return;
@@ -85,6 +88,7 @@
     SceneSerializer.applyToScene(scene.root, engine.sceneManager.root);
     selectedMesh = null;
     selectedFile = null;
+    scenePreviewSelection.set(null);
   }
 </script>
 

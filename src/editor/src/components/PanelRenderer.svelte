@@ -3,7 +3,7 @@
   import InspectorPanel from "./InspectorPanel.svelte";
   import Viewport from "./Viewport.svelte";
   import AssetBrowser from "./panels/AssetBrowser.svelte";
-  import ThreeEditorPanel from "./panels/ThreeEditorPanel.svelte";
+  import SceneViewerPanel from "./panels/SceneViewerPanel.svelte";
   import type { PanelId } from "../stores/dockStore";
 
   export let panelId: PanelId;
@@ -18,8 +18,8 @@
   <AssetBrowser />
 {:else if panelId === "inspector"}
   <InspectorPanel />
-{:else if panelId === "three-editor"}
-  <ThreeEditorPanel />
+{:else if panelId === "scene-viewer"}
+  <SceneViewerPanel />
 {:else}
   <div class="unknown-panel">Unknown panel: {panelId}</div>
 {/if}

@@ -59,6 +59,22 @@ export class MeshLoader {
       throw new Error("MeshLoader: mesh contains zero vertices");
     }
 
+    const sanitizeFloatArray = (array: Float32Array, label: string) => {
+      let dirty = 0;
+      for (let i = 0; i < array.length; i++) {
+        if (!Number.isFinite(array[i])) {
+          array[i] = 0;
+          dirty++;
+        }
+      }
+      if (dirty > 0) {
+        console.warn(
+          `MeshLoader: replaced ${dirty} invalid ${label} entries with 0 to keep the mesh renderable.`,
+        );
+      }
+      return array;
+    };
+
     const readAttribute = (floatsPerVertex: number, label: string) => {
       const expectedBytes = vertCount * floatsPerVertex * 4;
       const slice = takeBytes(expectedBytes, label);
@@ -66,7 +82,8 @@ export class MeshLoader {
       if (usableBytes <= 0) {
         return new Float32Array();
       }
-      return new Float32Array(slice.slice(0, usableBytes));
+      const data = new Float32Array(slice.slice(0, usableBytes));
+      return sanitizeFloatArray(data, label);
     };
 
     const vertices = readAttribute(3, "positions");

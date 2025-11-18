@@ -91,12 +91,16 @@
   <div class="preview-pane">
     <div class="preview-header">Mesh Preview</div>
     <div class="preview-body">
-      {#if !hasPackLoaded()}
-        <div class="placeholder">Import a .pack file to preview meshes.</div>
-      {:else if !selectedMesh}
+      {#if selectedMesh}
+        {#if hasPackLoaded()}
+          <MeshPreview meshName={selectedMesh} />
+        {:else}
+          <div class="placeholder">Preview unavailable until the pack finishes loading.</div>
+        {/if}
+      {:else if hasPackLoaded()}
         <div class="placeholder">Select a mesh to see a real-time preview.</div>
       {:else}
-        <MeshPreview meshName={selectedMesh} />
+        <div class="placeholder">Import a .pack file to preview meshes.</div>
       {/if}
     </div>
     {#if selectedMesh}

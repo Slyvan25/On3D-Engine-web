@@ -13,6 +13,7 @@
     viewport: "Scene View",
     assets: "Assets",
     inspector: "Inspector",
+    "three-editor": "Three.js Editor",
   };
 
   $: layout = $dockLayout[zoneId];

@@ -1,6 +1,11 @@
 import { writable } from "svelte/store";
 
-export type PanelId = "hierarchy" | "viewport" | "assets" | "inspector";
+export type PanelId =
+  | "hierarchy"
+  | "viewport"
+  | "assets"
+  | "inspector"
+  | "three-editor";
 export type DockZoneId = "left" | "center" | "bottom" | "right";
 
 export interface DockZoneState {
@@ -14,7 +19,11 @@ export type DockLayoutState = Record<DockZoneId, DockZoneState>;
 const initialLayout: DockLayoutState = {
   left: { id: "left", panels: ["hierarchy"], active: "hierarchy" },
   center: { id: "center", panels: ["viewport"], active: "viewport" },
-  bottom: { id: "bottom", panels: ["assets"], active: "assets" },
+  bottom: {
+    id: "bottom",
+    panels: ["assets", "three-editor"],
+    active: "assets",
+  },
   right: { id: "right", panels: ["inspector"], active: "inspector" },
 };
 

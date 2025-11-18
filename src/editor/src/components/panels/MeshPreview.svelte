@@ -14,6 +14,7 @@
   let resizeObserver: ResizeObserver | null = null;
   let currentMesh: THREE.Mesh | null = null;
   let currentMeshName: string | null = null;
+  let loadError: string | null = null;
 
   $: resourceManager = $resourceStore.resourceManager;
 
@@ -108,6 +109,7 @@
 
     if (!name || !manager) {
       disposeCurrentMesh();
+      loadError = null;
       return;
     }
 
@@ -121,10 +123,12 @@
     } catch (err) {
       console.error("Failed to load mesh", err);
       disposeCurrentMesh();
+      loadError = err instanceof Error ? err.message : String(err);
       return;
     }
 
     disposeCurrentMesh();
+    loadError = null;
 
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.BufferAttribute(meshData.vertices, 3));
@@ -162,9 +166,20 @@
   }
 </script>
 
-<div class="preview-canvas" bind:this={container}></div>
+<div class="preview-wrapper">
+  <div class="preview-canvas" bind:this={container}></div>
+  {#if loadError}
+    <div class="preview-error" role="status">Failed to load mesh: {loadError}</div>
+  {/if}
+</div>
 
 <style>
+  .preview-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
   .preview-canvas {
     width: 100%;
     height: 100%;
@@ -173,5 +188,20 @@
     border-radius: 4px;
     border: 1px solid #23233a;
     overflow: hidden;
+  }
+
+  .preview-error {
+    position: absolute;
+    inset: 8px;
+    border-radius: 4px;
+    background: rgba(16, 16, 24, 0.9);
+    border: 1px solid #5b1f1f;
+    color: #ffb4b4;
+    font-size: 13px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
   }
 </style>

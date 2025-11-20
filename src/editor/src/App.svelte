@@ -5,16 +5,17 @@
   import { setEngine } from "./stores/editorStore";
 
   import Toolbar from "./components/Toolbar.svelte";
-  import HierarchyPanel from "./components/HierarchyPanel.svelte";
-  import InspectorPanel from "./components/InspectorPanel.svelte";
-  // import HierarchyPanel from "./components/HierarchyPanel.svelte";
-  import Viewport from "./components/Viewport.svelte";
-  import AssetBrowser from "./components/panels/AssetBrowser.svelte";
+  import DockZone from "./components/DockZone.svelte";
 
   let canvasEl: HTMLCanvasElement | null = null;
+  const PANE_STORAGE_KEY = "on3d-editor-pane-sizes";
+  let paneSizes = { left: 18, right: 22, bottom: 32 };
+  let panesLoaded = false;
 
   onMount(async () => {
     if (!canvasEl) return;
+
+    loadStoredPaneSizes();
 
     const engine = await WebOn3DEngine.create({
       canvas: canvasEl,
@@ -32,49 +33,68 @@
       engine.renderSystem.setSize(window.innerWidth, window.innerHeight);
     });
   });
+
+  function loadStoredPaneSizes() {
+    if (panesLoaded || typeof window === "undefined") return;
+    try {
+      const raw = window.localStorage.getItem(PANE_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        paneSizes = {
+          left: parsed.left ?? paneSizes.left,
+          right: parsed.right ?? paneSizes.right,
+          bottom: parsed.bottom ?? paneSizes.bottom,
+        };
+      }
+    } catch (err) {
+      console.warn("App: failed to restore pane sizes", err);
+    }
+    panesLoaded = true;
+  }
+
+  function persistPaneSizes(next: typeof paneSizes) {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(PANE_STORAGE_KEY, JSON.stringify(next));
+  }
+
+  function handlePrimaryResize(event: CustomEvent<any>) {
+    const panes = event.detail?.panes ?? [];
+    if (panes.length < 3) return;
+    paneSizes = { ...paneSizes, left: panes[0].size, right: panes[2].size };
+    persistPaneSizes(paneSizes);
+  }
+
+  function handleCenterResize(event: CustomEvent<any>) {
+    const panes = event.detail?.panes ?? [];
+    if (panes.length < 2) return;
+    paneSizes = { ...paneSizes, bottom: panes[1].size };
+    persistPaneSizes(paneSizes);
+  }
 </script>
 
 <div class="app-shell">
   <Toolbar />
 
-  <Splitpanes class="editor-layout">
-    <Pane size={15} minSize={10}>
-      <div class="panel">
-        <div class="panel-header">Hierarchy</div>
-        <div class="panel-body">
-          <!-- <HierarchyPanel /> -->
-        </div>
-      </div>
-    </Pane>
-    <Pane>
-      <Splitpanes horizontal>
-        <Pane>
-          <div class="panel">
-            <div class="panel-header">Scene View</div>
-            <div class="panel-body" style="padding:0;">
-              <Viewport bind:canvasEl />
-            </div>
-          </div>
-        </Pane>
-        <Pane size={30} minSize={10}>
-          <div class="panel">
-            <div class="panel-header">Assets</div>
-            <div class="panel-body">
-              <AssetBrowser />
-            </div>
-          </div>
-        </Pane>
-      </Splitpanes>
-    </Pane>
-    <Pane size={18} minSize={10}>
-      <div class="panel">
-        <div class="panel-header">Inspector</div>
-        <div class="panel-body">
-          <InspectorPanel />
-        </div>
-      </div>
-    </Pane>
-  </Splitpanes>
+  <div class="workspace">
+    <Splitpanes class="editor-layout" on:resized={handlePrimaryResize}>
+      <Pane size={paneSizes.left} minSize={12}>
+        <DockZone zoneId="left" bind:viewportCanvas={canvasEl} />
+      </Pane>
+      <Pane>
+        <Splitpanes horizontal on:resized={handleCenterResize}>
+          <Pane>
+            <DockZone zoneId="center" bind:viewportCanvas={canvasEl} />
+          </Pane>
+          <Pane size={paneSizes.bottom} minSize={18}>
+            <DockZone zoneId="bottom" bind:viewportCanvas={canvasEl} />
+          </Pane>
+        </Splitpanes>
+      </Pane>
+      <Pane size={paneSizes.right} minSize={14}>
+        <DockZone zoneId="right" bind:viewportCanvas={canvasEl} />
+      </Pane>
+    </Splitpanes>
+  </div>
 </div>
 
 <style>
@@ -82,51 +102,38 @@
     display: grid;
     grid-template-rows: auto 1fr;
     height: 100vh;
+    background: #08090f;
   }
 
-  .editor-layout {
-    background: #101015;
+  .workspace {
+    min-height: 0;
+    height: 100%;
+    padding: 12px;
+    background: radial-gradient(circle at top, rgba(28, 31, 51, 0.6), #06070d);
+    box-sizing: border-box;
   }
 
-  .panel {
-    background: #181822;
-    border-radius: 4px;
-    /* The border is now handled by the splitter */
-    /* border: 1px solid #23233a; */
-    border: 1px solid #23233a;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .panel-header {
-    padding: 4px 8px;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #aaa;
-    border-bottom: 1px solid #23233a;
-  }
-
-  .panel-body {
-    flex: 1;
-    overflow: auto;
-    padding: 6px;
+  :global(.editor-layout) {
+    height: 100%;
+    background: transparent;
   }
 
   :global(.splitpanes__pane) {
-    background: #101015 !important;
+    background: transparent !important;
+    min-height: 0;
   }
 
   :global(.splitpanes__splitter) {
-    background-color: #101015;
-    position: relative;
+    background-color: transparent;
     border: none;
+    position: relative;
   }
 
-  :global(.splitpanes__splitter:before) {
+  :global(.splitpanes__splitter::before) {
     content: "";
-    background-color: #23233a;
-    transition: background-color 0.3s;
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 999px;
   }
 </style>

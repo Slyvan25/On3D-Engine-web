@@ -13,7 +13,9 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@engine/*": ["../../src/engine/*"]
+      "@engine/*": ["../../src/engine/*"],
+      "svelte-dnd-action": ["src/lib/vendor/svelte-dnd-action"],
+      "svelte-dnd-action/*": ["src/lib/vendor/svelte-dnd-action"]
     },
     "types": ["svelte"]
   },

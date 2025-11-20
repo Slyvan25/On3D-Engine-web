@@ -95,9 +95,15 @@ function readUtf16LeString(view: DataView, offset: number, lengthBytes: number):
   return new TextDecoder("utf-16le").decode(trimmed).replace(/\0+$/, "");
 }
 
+function normalizeDirectory(dir: string): string {
+  if (!dir || dir.toLowerCase() === "root") return "";
+  return dir.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+}
+
 export interface PackEntryHeader {
   name: string;
-  offset: number;      // offset in content block
+  path: string;
+  offset: number; // offset in content block
   size: number;
   compressedSize: number;
   compressed: boolean;
@@ -163,13 +169,18 @@ export class PackReader {
         throw new Error("Compressed .pack files are not supported (QPang limitation).");
       }
 
+      const directory = dirs[location]?.name ?? "root";
+      const normalizedDir = normalizeDirectory(directory);
+      const path = normalizedDir ? `${normalizedDir}/${name}` : name;
+
       const entry: PackEntryHeader = {
         name,
+        path,
         offset: contentOffset,
         size,
         compressedSize,
         compressed: false,
-        directory: dirs[location]?.name ?? "root",
+        directory,
       };
 
         console.log(`PackReader: file[${i}] = ${entry.directory}/${name} (size: ${size} bytes)`);
@@ -184,8 +195,16 @@ export class PackReader {
     };
   }
 
+  private static normalizePath(path: string): string {
+    return path.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "").toLowerCase();
+  }
+
   static getFile(pack: PackFile, name: string): ArrayBuffer | null {
-    const entry = pack.entries.find(e => e.name.toLowerCase() === name.toLowerCase());
+    const target = this.normalizePath(name);
+    const entry = pack.entries.find((e) => {
+      if (e.path && this.normalizePath(e.path) === target) return true;
+      return this.normalizePath(e.name) === target;
+    });
     if (!entry) return null;
 
     return pack.data.slice(entry.offset, entry.offset + entry.size);

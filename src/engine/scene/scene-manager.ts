@@ -9,6 +9,7 @@ import { IRenderSystem } from "../render/render-system.ts";
 export class WebSceneManager {
   readonly renderSystem: IRenderSystem;
   readonly root: SceneNode;
+  private environmentNode: SceneNode;
 
   private nodes = new Map<string, SceneNode>();
   private cameras = new Map<string, SceneCamera>();
@@ -23,7 +24,32 @@ export class WebSceneManager {
     this.root = new SceneNode("root");
     (this.renderSystem as any).scene.add(this.root.object3D);
 
+    this.environmentNode = new SceneNode("environment");
+    this.root.attach(this.environmentNode);
+    this.setupDefaultEnvironment();
+
     this.viewport = new Viewport(renderSystem);
+  }
+
+  private setupDefaultEnvironment() {
+    const ambient = new THREE.HemisphereLight(0xffffff, 0x404040, 0.6);
+    ambient.name = "default-ambient";
+    this.environmentNode.object3D.add(ambient);
+
+    const directional = new THREE.DirectionalLight(0xffffff, 1.0);
+    directional.position.set(5, 10, 7);
+    directional.name = "default-directional";
+    this.environmentNode.object3D.add(directional);
+
+    const skyGeo = new THREE.SphereGeometry(500, 32, 32);
+    skyGeo.scale(-1, 1, 1);
+    const skyMat = new THREE.MeshBasicMaterial({
+      color: 0x87ceeb,
+      side: THREE.BackSide,
+    });
+    const skybox = new THREE.Mesh(skyGeo, skyMat);
+    skybox.name = "default-skybox";
+    this.environmentNode.object3D.add(skybox);
   }
 
   // ---------------------------------------------------------------
